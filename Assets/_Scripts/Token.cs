@@ -11,29 +11,34 @@ public class Token : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
 	private int[] m_dragSpace;
 	private int m_tokenType;
 
+	private AudioSource m_audioSource;
+
 	public void OnBeginDrag(PointerEventData eventData) {
 		m_pointerPositionBeforeDrag = m_camera.ScreenToWorldPoint(eventData.position);
 		m_positionBeforeDrag = transform.position;
 		GetDragSpace();
+		m_audioSource.Play();
 	}
 
     public void OnDrag(PointerEventData eventData) {
+		Vector3 previousPosition = transform.position;
+		float currentFrameTokenDrag = Vector3.Distance(previousPosition, transform.position);
+		float clampedPitchDrag = Mathf.Clamp(currentFrameTokenDrag * 10, 0.9f, 1.05f);
+		m_audioSource.pitch = Mathf.Lerp(m_audioSource.pitch, clampedPitchDrag, 0.5f);
+		float clampedVolumeDrag = Mathf.Clamp(currentFrameTokenDrag * 10, 0.2f, 1.2f);
+		float interpolatedDrag = Mathf.Lerp(m_audioSource.volume, clampedVolumeDrag - 0.2f, 0.7f);
+		m_audioSource.volume = interpolatedDrag * Controller.Instance.Audio.SfxVolume;
+
 		Vector3 mouseWorldPosition = m_camera.ScreenToWorldPoint(eventData.position);
-		//«агальне зм≥щенн€ курсору (пальц€) щодо точки, зв≥дки почавс€ дрег:
 		Vector3 totalDrag = mouseWorldPosition - m_pointerPositionBeforeDrag;
-		//¬изначаЇмо, т€гнемо ф≥шку по горизонтал≥ або по вертикал≥:
 		if (Mathf.Abs(totalDrag.x) > Mathf.Abs(totalDrag.y)) {
-			//ќбмежуЇмо перем≥щенн€ лише порожн≥ми кл≥тинами всередин≥ пол€
 			float posX = Mathf.Clamp(mouseWorldPosition.x, m_positionBeforeDrag.x -
 			m_dragSpace[1], m_positionBeforeDrag.x + m_dragSpace[0]);
-			//перем≥щуЇмо ф≥шку
 			transform.position = new Vector3(posX, m_positionBeforeDrag.y,
 			transform.position.z);
 		} else {
-			//ќбмежуЇмо перем≥щенн€ лише порожн≥ми кл≥тинами всередин≥ пол€
 			float posY = Mathf.Clamp(mouseWorldPosition.y, m_positionBeforeDrag.y -
 			m_dragSpace[3], m_positionBeforeDrag.y + m_dragSpace[2]);
-			//перем≥щуЇмо ф≥шку
 			transform.position = new Vector3(m_positionBeforeDrag.x, posY,
 			transform.position.z);
 		}
@@ -43,6 +48,7 @@ public class Token : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
 	public void OnEndDrag(PointerEventData eventData) {
 		AlignOnGrid();
 		Controller.Instance.TurnDone();
+		m_audioSource.Stop();
 	}
 
     void Start()
@@ -54,6 +60,7 @@ public class Token : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
 		myMaterial.SetColor("_Color", Controller.Instance.TokenColors[m_tokenType]);
 		Controller.Instance.TokensByTypes[m_tokenType].Add(this);
 		transform.SetParent(Controller.Instance.Field.transform);
+		m_audioSource = gameObject.GetComponent<AudioSource>();
 	}
     void Update()
     {
