@@ -8,7 +8,16 @@ public class Score
 	[SerializeField] private int m_currentScore;
 	[SerializeField] private int m_levelScoreBonus;
 	[SerializeField] private int m_turnScoreBonus;
-	public int CurrentScore { set { m_currentScore = value; } get { return m_currentScore; } }
+	public int CurrentScore {
+		get {
+			return m_currentScore;
+		}
+		set {
+
+			m_currentScore = value;
+			Hud.Instance.UpdateScoreValue(m_currentScore);
+		}
+	}
 	public void AddLevelBonus() {
 		CurrentScore += m_levelScoreBonus;
 	}

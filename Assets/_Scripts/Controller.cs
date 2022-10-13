@@ -63,8 +63,11 @@ public class Controller : MonoBehaviour {
         Audio.SourceMusic = gameObject.AddComponent<AudioSource>();
         Audio.SourceRandomPitchSFX = gameObject.AddComponent<AudioSource>();
         Audio.SourceSFX = gameObject.AddComponent<AudioSource>();
+
+        DataStore.LoadOptions();
     }
     private void Start() {
+        DataStore.LoadGame();
         InitializeLevel();
         TurnCountHelper.Count();
         Audio.PlayMusic(true);
@@ -84,16 +87,16 @@ public class Controller : MonoBehaviour {
     public void TurnDone() {
         Audio.PlaySound("Drop");
         if (IsAllTokensConnected()) {
-            //Debug.Log("Win!");
             Audio.PlaySound("Victory");
             Score.AddLevelBonus();
             m_currentLevel++;
             Destroy(m_field.gameObject);
-            InitializeLevel();
+            Hud.Instance.CountScore(m_level.Turns);
         } else {
-            //Debug.Log("Continue...");
+            if (m_level.Turns > 0) {
+                m_level.Turns--;
+            }
         }
-
     }
     public bool IsAllTokensConnected() {
         for (var i = 0; i < TokensByTypes.Count; i++) {
@@ -151,5 +154,12 @@ public class Controller : MonoBehaviour {
             TokensByTypes.Add(new List<Token>());
         }
         m_field = Field.Create(m_level.FieldSize, m_level.FreeSpace);
+    }
+    public void Reset() {
+        CurrentLevel = 1;
+        Score.CurrentScore = 0;
+        Destroy(m_field.gameObject);
+        DataStore.SaveGame();
+        InitializeLevel();
     }
 }

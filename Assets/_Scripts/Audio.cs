@@ -59,6 +59,7 @@ public class Audio {
 		set {
 			musicVolume = value;
 			SourceMusic.volume = musicVolume;
+			DataStore.SaveOptions();
 		}
 	}
 	public float SfxVolume {
@@ -67,6 +68,7 @@ public class Audio {
 			sfxVolume = value;
 			SourceSFX.volume = sfxVolume;
 			SourceRandomPitchSFX.volume = sfxVolume;
+			DataStore.SaveOptions();
 		}
 	}
 	#endregion
